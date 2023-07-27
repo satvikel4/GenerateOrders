@@ -4,8 +4,7 @@ from itertools import combinations
 import math
 
 
-def get_orders():
-    target_path = "/Users/satvikeltepu/Desktop/code/generate_orders_java/outputs/inter/Activiti/Activiti/activiti-spring-boot-starter/b11f757"
+def get_orders(target_path):
     orders = []
 
     for filename in os.listdir(target_path):
@@ -38,7 +37,7 @@ def max_cover_order(orders, selected_orders, t):
             temp_orders = selected_orders + [order]
             temp_cover = count_unique_seq(temp_orders, t)
             cover = count_unique_seq(selected_orders + [order], t)
-            print(f"Temp coverage after adding {order}: {temp_cover}")
+            #print(f"Temp coverage after adding {order}: {temp_cover}")
             #print(f"Cover after adding {order}: {cover}")
             if cover > max_cover:
                 max_cover = cover
@@ -60,6 +59,8 @@ def sort_orders(orders, t):
     return sorted_orders
 
 if __name__ == "__main__":
-    orders = get_orders()
-    sort_orders(orders, 2)
-    
+    target_path = input("Please enter the target path: ")
+    orders = get_orders(target_path)
+    t = int(input("Please enter the value of t: "))
+    print("Sorted Orders: ")
+    sort_orders(orders, t)
