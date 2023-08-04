@@ -108,28 +108,18 @@ def find_OD_in_sorted_orders(sorted_orders, OD_list):
 
 
 if __name__ == "__main__":
-    mode = int(input("Would you like to execute mode 1 or mode 2 (mode 1 ranks test orders and mode 2 finds number of test orders needed to find all ODs) "))
-    if mode == 1:
-        target_path = input("Please enter the target path for generated orders: ")
-        t = int(input("Please enter the value of t: "))
-        orders = get_orders(target_path)
-        sorted = sort_orders(orders, t)
-        for i in range(len(sorted)):
-            print()
-            print("Order " + str(i) + ": " + str(sorted[i]))
-    else:
-        github_slug = input("Enter the github slug: ")
-        module = input("Enter the module name (or press Enter to match any): ")
-        target_path_polluter_cleaner = input("Please enter the target path for polluter cleaner list: ")
-        result = get_victims_or_brittle(github_slug, module,target_path_polluter_cleaner)
-        #print(f"Number OD pairs found: {len(result)}")
-        target_path = input("Please enter the target path for generated orders: ")
-        orders = get_orders(target_path)
-        t = int(input("Please enter the value of t: "))
-        #print("Sorted Orders: ")
-        sorted_orders = sort_orders(orders, t)
+    github_slug = input("Enter the github slug: ")
+    module = input("Enter the module name (or press Enter to match any): ")
+    target_path_polluter_cleaner = input("Please enter the target path for polluter cleaner list: ")
+    result = get_victims_or_brittle(github_slug, module,target_path_polluter_cleaner)
+    #print(f"Number OD pairs found: {len(result)}")
+    target_path = input("Please enter the target path for generated orders: ")
+    orders = get_orders(target_path)
+    t = int(input("Please enter the value of t: "))
+    #print("Sorted Orders: ")
+    sorted_orders = sort_orders(orders, t)
 
-        sorted_order_count, OD_found, not_found_ODs = find_OD_in_sorted_orders(sorted_orders, result)
-        print(f"Number of sorted orders needed to find all OD: {sorted_order_count}")
-        #print("OD found: ", OD_found)
-        #print("OD not found: ", not_found_ODs)
+    sorted_order_count, OD_found, not_found_ODs = find_OD_in_sorted_orders(sorted_orders, result)
+    print(f"Number of sorted orders needed to find all OD: {sorted_order_count}")
+    #print("OD found: ", OD_found)
+    #print("OD not found: ", not_found_ODs)
