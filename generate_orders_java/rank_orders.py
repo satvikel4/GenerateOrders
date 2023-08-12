@@ -1,8 +1,10 @@
 import os
 import json
+import itertools
 from itertools import combinations
 import math
 import csv
+import random
 
 def get_orders(target_path):
     orders = []
@@ -106,6 +108,50 @@ def find_OD_in_sorted_orders(sorted_orders, OD_list):
     #print(f"Number of OD not found: {len(OD_list)}")
     return sorted_order_count, OD_found, OD_list
 
+def create_test_order_mapping(samplefile):
+    with open(samplefile, "r") as f:
+        data = json.load(f)
+        test_orders = data['testOrder']
+        
+        test_order_mapping = {test_order: index + 1 for index, test_order in enumerate(test_orders)}
+        
+        return test_order_mapping
+
+def clear_file(file_path):
+    with open(file_path, "w") as f:
+        pass
+
+def write_indices_to_file(n, indices, output_file):
+    with open(output_file, "a") as f:
+        index_list = [str(index) for index in indices]
+        f.write(str(n) + ", " + " ".join(index_list) + "\n")
+
+def genRandomBoxes(nvars, size, number):
+    res = {}
+    if math.factorial(nvars) / math.factorial(nvars - size) < number:
+        print('There are only ' + str(math.factorial(nvars) / math.factorial(nvars - size)) + ' permutations')
+        for comb in itertools.permutations(range(1, nvars + 1), size):
+            res[comb] = 0
+        return res
+    for i in range(number):
+        res[tuple(random.sample(range(1, nvars + 1), size))] = 0
+    return res
+
+def approximate_permutation(samplefile, size, epsilon, delta):
+    nBoxes = math.ceil(3 * math.log(2 / delta) / (epsilon*epsilon))
+    with open(samplefile, "r") as f:
+        nvars = len(f.readline().strip().split(',')[1].strip().split(' '))
+    boxes = genRandomBoxes(nvars, size, nBoxes)
+    with open(samplefile, "r") as f:
+        for line in f:
+            s = list(map(int, line.strip().split(',')[1].strip().split(' ')))
+            for perm in boxes.keys():
+                if boxes[perm] == 0 and all(s[abs(perm[i])-1] == perm[i] for i in range(size)):
+                    boxes[perm] = 1
+    coveredBoxes = sum(boxes.values())
+    countRes = int((math.factorial(nvars) / math.factorial(nvars - size)) * coveredBoxes / nBoxes)
+    print("Approximate number of permutations " + str(countRes))
+    return countRes
 
 if __name__ == "__main__":
     github_slug = input("Enter the github slug: ")
@@ -123,3 +169,21 @@ if __name__ == "__main__":
     print(f"Number of sorted orders needed to find all OD: {sorted_order_count}")
     #print("OD found: ", OD_found)
     #print("OD not found: ", not_found_ODs)
+
+    output_file = input("Please enter the output file path: ")
+    clear_file(output_file)
+    first_round = input("Please enter the first round path for generated orders: ")
+    test_order_mapping = create_test_order_mapping(first_round)
+    indices = test_order_mapping.values()
+    write_indices_to_file(1, indices, output_file)
+    rounds = int(input("How many more rounds were generated? "))
+    for i in range(rounds):
+        next_round = input("Please enter the next round path for generated orders: ")
+        with open(next_round, "r") as f:
+            data = json.load(f)
+            test_orders = data['testOrder']
+            new_indices = [test_order_mapping[test_order] - 1 for test_order in test_orders]
+            write_indices_to_file(i + 2, new_indices, output_file)
+    approximate_permutation(output_file, 2, 0.1, 0.1)
+
+
