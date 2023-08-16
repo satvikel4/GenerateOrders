@@ -199,8 +199,3 @@ if __name__ == "__main__":
     approximate_permutation(output_file, t, 0.1, 0.1)
     end = time.time()
     print("Time to check coverage: " + str(end - start))
-
-
-
-
-
