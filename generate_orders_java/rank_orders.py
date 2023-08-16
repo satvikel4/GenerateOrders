@@ -5,6 +5,7 @@ from itertools import combinations
 import math
 import csv
 import random
+import time
 
 def get_orders(target_path):
     orders = []
@@ -154,36 +155,52 @@ def approximate_permutation(samplefile, size, epsilon, delta):
     return countRes
 
 if __name__ == "__main__":
-    github_slug = input("Enter the github slug: ")
-    module = input("Enter the module name (or press Enter to match any): ")
-    target_path_polluter_cleaner = input("Please enter the target path for polluter cleaner list: ")
-    result = get_victims_or_brittle(github_slug, module,target_path_polluter_cleaner)
-    #print(f"Number OD pairs found: {len(result)}")
+    # github_slug = input("Enter the github slug: ")
+    # module = input("Enter the module name (or press Enter to match any): ")
+    # target_path_polluter_cleaner = input("Please enter the target path for polluter cleaner list: ")
+    # result = get_victims_or_brittle(github_slug, module,target_path_polluter_cleaner)
+    # #print(f"Number OD pairs found: {len(result)}")
+    # target_path = input("Please enter the target path for generated orders: ")
+    # orders = get_orders(target_path)
+    # t = int(input("Please enter the value of t: "))
+    # #print("Sorted Orders: ")
+    # sorted_orders = sort_orders(orders, t)
+
+    # sorted_order_count, OD_found, not_found_ODs = find_OD_in_sorted_orders(sorted_orders, result)
+    # print(f"Number of sorted orders needed to find all OD: {sorted_order_count}")
+    # #print("OD found: ", OD_found)
+    # #print("OD not found: ", not_found_ODs)
+
     target_path = input("Please enter the target path for generated orders: ")
     orders = get_orders(target_path)
     t = int(input("Please enter the value of t: "))
-    #print("Sorted Orders: ")
+    start = time.time()
     sorted_orders = sort_orders(orders, t)
+    end = time.time()
+    print("Time to sort orders: " + str(end - start))
 
-    sorted_order_count, OD_found, not_found_ODs = find_OD_in_sorted_orders(sorted_orders, result)
-    print(f"Number of sorted orders needed to find all OD: {sorted_order_count}")
-    #print("OD found: ", OD_found)
-    #print("OD not found: ", not_found_ODs)
-
+    #target_path = input("Please enter the target path for generated orders: ")
     output_file = input("Please enter the output file path: ")
     clear_file(output_file)
-    first_round = input("Please enter the first round path for generated orders: ")
+    #orders = get_orders(target_path)
+    #t = int(input("Please enter the value of t: "))
+    first_round = os.path.join(target_path, os.listdir(target_path)[0])
     test_order_mapping = create_test_order_mapping(first_round)
     indices = test_order_mapping.values()
     write_indices_to_file(1, indices, output_file)
-    rounds = int(input("How many more rounds were generated? "))
-    for i in range(rounds):
-        next_round = input("Please enter the next round path for generated orders: ")
-        with open(next_round, "r") as f:
-            data = json.load(f)
-            test_orders = data['testOrder']
+    for i in range(len(orders)):
+        if i == 0:
+            pass
+        else:
+            test_orders = orders[i]
             new_indices = [test_order_mapping[test_order] - 1 for test_order in test_orders]
-            write_indices_to_file(i + 2, new_indices, output_file)
-    approximate_permutation(output_file, 2, 0.1, 0.1)
+            write_indices_to_file(i + 1, new_indices, output_file)
+    start = time.time()
+    approximate_permutation(output_file, t, 0.1, 0.1)
+    end = time.time()
+    print("Time to check coverage: " + str(end - start))
+
+
+
 
 
