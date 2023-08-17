@@ -50,6 +50,7 @@ def max_cover_order(orders, selected_orders, t):
 
 
 def sort_orders(orders, t):
+    print(len(orders))
     total_possibilities = math.factorial(len(orders[0])) / math.factorial(len(orders[0]) - t) # total possibilities
 
     sorted_orders = []
@@ -258,7 +259,7 @@ def sort_orders_approxcov(target_path, orders, t):
     test_order_mapping = create_test_order_mapping(first_round)
     indices = test_order_mapping.values()
     write_indices_to_file(1, indices, output_file)
-    orders.pop(0)
+    sorted.append(orders.pop(0))
     line = 2
     while orders:
         max_order = []
@@ -357,6 +358,7 @@ if __name__ == "__main__":
 
     target_path = input("Please enter the target path for generated orders: ")
     orders = get_orders(target_path)
-    sorted = sort_orders_approxcov(target_path, orders, 2)
-    sorted_orders = sort_orders(orders, 2)
-    print(sorted == sorted_orders)
+    # manual_orders = orders.copy()
+    # sorted_orders = sort_orders(manual_orders, 2)
+    approxcov_orders = orders.copy()
+    sorted = sort_orders_approxcov(target_path, approxcov_orders, 2)
