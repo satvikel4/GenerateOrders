@@ -9,7 +9,6 @@ import random
 
 def get_orders(target_path):
     orders = []
-
     for filename in os.listdir(target_path):
         file_path = os.path.join(target_path, filename)
         if os.path.isfile(file_path):
@@ -18,8 +17,6 @@ def get_orders(target_path):
                 parsed = json.loads(content)
                 order = parsed["testOrder"]
                 orders.append(order)
-    num_orders = len(orders)
-    print("Number of orders:", num_orders)
     return orders
 
 def get_seq(order, t):
@@ -196,15 +193,6 @@ def find_OD_in_sorted_orders_greedy(sorted_orders, OD_dict, unique_od_test_list)
     #print(sorted_orders)
     return find_OD_in_sorted_orders(sorted_orders,OD_dict,unique_od_test_list)
 
-def create_test_order_mapping(samplefile):
-    with open(samplefile, "r") as f:
-        data = json.load(f)
-        test_orders = data['testOrder']
-        
-        test_order_mapping = {test_order: index + 1 for index, test_order in enumerate(test_orders)}
-        
-        return test_order_mapping
-
 def clear_file(file_path):
     with open(file_path, "w") as f:
         pass
@@ -251,30 +239,41 @@ def approximate_permutation(samplefile, size, epsilon, delta):
     print("Approximate number of permutations " + str(countRes))
     return countRes
 
-def sort_orders_approxcov(target_path, orders, t):
+def create_test_order_mapping(target_path):
+    test_order_mapping = {}
+    index = 1
+    for path in os.listdir(target_path):
+        file = os.path.join(target_path, path)
+        with open(file, "r") as f:
+            data = json.load(f)
+            test_orders = data['testOrder']
+            for test_order in test_orders:
+                if test_order not in test_order_mapping:
+                    test_order_mapping[test_order] = index 
+                    index += 1
+    return test_order_mapping
+
+def sort_orders_approxcov(target_path, orders, t, output_file):
     sorted = []
-    output_file = input("Please enter the output file path: ")
     clear_file(output_file)
-    first_round = os.path.join(target_path, os.listdir(target_path)[0])
-    test_order_mapping = create_test_order_mapping(first_round)
-    indices = test_order_mapping.values()
-    write_indices_to_file(1, indices, output_file)
-    sorted.append(orders.pop(0))
-    line = 2
+    #first_round = os.path.join(target_path, os.listdir(target_path)[0])
+    test_order_mapping = create_test_order_mapping(target_path)
+    line = 1 
     while orders:
         max_order = []
-        max_score = 0
+        max_score = -1
         for order in orders:
-            new_indices = [test_order_mapping[test_order] - 1 for test_order in order]
+            new_indices = [test_order_mapping[test_order] for test_order in order]
             write_indices_to_file(line, new_indices, output_file)
             score = approximate_permutation(output_file, t, 0.1, 0.1)
             if score > max_score:
                 max_order = order
                 max_score = score
             remove_last_line(output_file)
-        orders.remove(max_order)
+        if max_order in orders:
+            orders.remove(max_order)
         sorted.append(max_order)
-        new_indices = [test_order_mapping[test_order] - 1 for test_order in max_order]
+        new_indices = [test_order_mapping[test_order] for test_order in max_order]
         write_indices_to_file(line, new_indices, output_file)
         line += 1
     return sorted
@@ -356,9 +355,16 @@ if __name__ == "__main__":
     # end = time.time()
     # print("Time to check coverage: " + str(end - start))
 
-    target_path = input("Please enter the target path for generated orders: ")
+    #target_path = input("Please enter the target path for generated orders: ")
+    target_path = "/Users/satvikeltepu/Desktop/GenerateOrders/generate_orders_java/outputs/inter/Activiti/Activiti/activiti-spring-boot-starter/b11f757"
+    output_file = "/Users/satvikeltepu/Desktop/GenerateOrders/generate_orders_java/output.txt"
     orders = get_orders(target_path)
-    # manual_orders = orders.copy()
-    # sorted_orders = sort_orders(manual_orders, 2)
+    manual_orders = orders.copy()
+    sorted_orders = sort_orders(manual_orders, 2)
     approxcov_orders = orders.copy()
-    sorted = sort_orders_approxcov(target_path, approxcov_orders, 2)
+    start = time.time()
+    sorted_approxcov = sort_orders_approxcov(target_path, approxcov_orders, 2, output_file)
+    print(sorted_orders == sorted_approxcov)
+    end = time.time()
+    print("Number of Orders: " + str(len(orders)))
+    print("Time elapsed: " + str(end-start))
